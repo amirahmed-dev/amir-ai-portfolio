@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow Architecture | Amir Ahmed</title>
+  <style>
+    /* =========================================
+       SYNCHRONIZED DESIGN SYSTEM
+       ========================================= */
+    :root {
+      --bg-main: #0a0a0c;
+      --bg-secondary: #16161a;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --neon-accent: #00f0ff;
+      --neon-hover: #00c3ff;
+      --neon-purple: #b026ff;
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-main); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-secondary); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #27272a; }
+
+    /* =========================================
+       AMBIENT BACKGROUND ANIMATIONS
+       ========================================= */
+    .ambient-node {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--neon-accent) 0%, transparent 70%);
+      opacity: 0.05;
+      filter: blur(40px);
+      animation: float 15s infinite ease-in-out alternate;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .node-1 { width: 400px; height: 400px; top: -100px; left: -100px; }
+    .node-2 { width: 500px; height: 500px; bottom: 10%; right: -150px; background: radial-gradient(circle, var(--neon-purple) 0%, transparent 70%); animation-duration: 20s; animation-direction: alternate-reverse; }
+    .node-3 { width: 300px; height: 300px; top: 40%; left: 30%; background: radial-gradient(circle, var(--neon-accent) 0%, transparent 70%); animation-duration: 12s; opacity: 0.03; }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -50px) scale(1.1); }
+      100% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* =========================================
+       ANIMATIONS
+       ========================================= */
+    @keyframes fadeUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-up { opacity: 0; animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+
+    /* =========================================
+       SUMMARY VIEW (HERO)
+       ========================================= */
+    #summary-view {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 0 24px; position: relative;
+      min-height: 100vh;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 12px; padding: 8px 16px;
+      border-radius: 50px; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.2);
+      color: var(--neon-accent); font-size: 0.875rem; font-weight: 500; margin-bottom: 2rem;
+    }
+
+    .ping-dot { position: relative; display: flex; height: 8px; width: 8px; }
+    .ping-dot::before, .ping-dot::after {
+      content: ''; position: absolute; width: 100%; height: 100%;
+      background: var(--neon-accent); border-radius: 50%;
+    }
+    .ping-dot::before { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+    @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; color: white;
+      line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.02em;
+    }
+    .hero-title span {
+      background: linear-gradient(to right, var(--neon-accent), var(--neon-purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-desc { font-size: 1.25rem; color: var(--text-muted); max-width: 800px; margin: 0 auto 3rem auto; }
+
+    .btn-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: center; min-height: 80px; }
+    
+    .primary-btn {
+      position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+      padding: 16px 32px; background: var(--text-main); color: var(--bg-main);
+      border: none; border-radius: 50px; font-size: 1.125rem; font-weight: 600;
+      cursor: pointer; overflow: hidden; transition: transform 0.2s ease, opacity 0.1s ease;
+      white-space: nowrap; 
+    }
+    .primary-btn:hover { transform: scale(1.05); }
+    .primary-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to right, var(--neon-accent), var(--neon-purple));
+      opacity: 0; transition: opacity 0.5s ease;
+    }
+    .primary-btn:hover::before { opacity: 0.15; }
+    .primary-btn span { position: relative; z-index: 1; }
+    .primary-btn svg { position: relative; z-index: 1; transition: transform 0.3s ease; width: 20px; height: 20px; flex-shrink: 0; }
+    .primary-btn:hover svg { transform: translateY(4px); }
+
+    .secondary-link {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 32px;
+      color: var(--text-muted); text-decoration: none; font-size: 1.125rem; font-weight: 600;
+      transition: all 0.3s ease; border: 1px solid var(--border-subtle); border-radius: 50px;
+      white-space: nowrap; transform-origin: center;
+    }
+    .secondary-link:hover { color: var(--neon-accent); border-color: var(--neon-accent); background: rgba(0,240,255,0.05); }
+
+    /* =========================================
+       GALLERY VIEW (SCROLLABLE AREA)
+       ========================================= */
+    #gallery-view { padding-bottom: 100px; }
+
+    .sticky-nav {
+      position: sticky; top: 0; z-index: 50; background: rgba(10, 10, 12, 0.85);
+      backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle);
+      padding: 24px 0; margin-bottom: 60px;
+    }
+    .nav-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .back-btn {
+      background: transparent; border: none; color: var(--text-muted); font-size: 1rem;
+      display: flex; align-items: center; gap: 8px; cursor: pointer; transition: color 0.3s;
+    }
+    .back-btn:hover { color: white; }
+    .back-btn svg { transition: transform 0.3s; width: 20px; height: 20px; }
+    .back-btn:hover svg { transform: translateY(-4px); }
+    .nav-label { color: var(--neon-accent); font-size: 0.875rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
+
+    .macro-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin-bottom: 100px; max-width: 1200px; margin: 0 auto 100px auto; padding: 0 24px; }
+    @media (min-width: 1024px) { .macro-grid { grid-template-columns: 1fr 1fr; } }
+    .macro-card {
+      background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 16px;
+      padding: 8px; overflow: hidden; transition: all 0.5s ease;
+    }
+    .macro-card:hover { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 40px rgba(0, 240, 255, 0.1); }
+    .macro-card img { width: 100%; height: auto; border-radius: 12px; display: block; transition: transform 0.7s ease; }
+    .macro-card:hover img { transform: scale(1.02); }
+
+    .step-section { max-width: 1200px; margin: 0 auto 120px auto; padding: 0 24px; display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center; }
+    @media (min-width: 1024px) {
+      .step-section { grid-template-columns: 5fr 7fr; gap: 80px; }
+      .step-reverse .text-content { order: 2; }
+      .step-reverse .image-content { order: 1; }
+      .text-content { position: sticky; top: 120px; }
+    }
+
+    .step-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .step-number { font-family: monospace; font-size: 1.5rem; color: #52525b; }
+    .step-line { height: 1px; width: 48px; background: #27272a; }
+    .step-title { font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 24px; line-height: 1.2; }
+
+    .image-content {
+      position: relative; border-radius: 16px; background: rgba(22, 22, 26, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05); padding: 12px; transition: transform 0.5s ease;
+    }
+    .image-content:hover { transform: translateY(-5px) scale(1.02); }
+    .image-content::before {
+      content: ''; position: absolute; inset: -4px; background: linear-gradient(45deg, transparent, rgba(0, 240, 255, 0.15), var(--neon-purple), transparent);
+      border-radius: 20px; filter: blur(20px); opacity: 0; transition: opacity 0.5s ease; z-index: -1;
+    }
+    .image-content:hover::before { opacity: 1; }
+
+    .ide-window { background: var(--bg-main); border: 1px solid #27272a; border-radius: 12px; overflow: hidden; }
+    .ide-header { background: var(--bg-secondary); border-bottom: 1px solid #27272a; height: 40px; display: flex; align-items: center; padding: 0 16px; gap: 8px; }
+    .ide-dot { width: 12px; height: 12px; border-radius: 50%; background: #3f3f46; }
+    .ide-title { margin-left: 16px; font-family: monospace; font-size: 0.75rem; color: #71717a; }
+    .ide-window img { width: 100%; display: block; }
+
+    .download-section { text-align: center; padding: 80px 24px; margin: 0 auto; max-width: 800px; border-top: 1px solid var(--border-subtle); }
+    .download-section svg { transition: transform 0.3s ease; }
+    .primary-btn:hover svg.download-icon { transform: translateY(4px); }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-node node-1"></div>
+  <div class="ambient-node node-2"></div>
+  <div class="ambient-node node-3"></div>
+
+  <div id="app">
+    <section id="summary-view">
+      <div class="animate-fade-up">
+        <div class="badge">
+          <div class="ping-dot"></div>
+          Client Success Workflow Automation
+        </div>
+      </div>
+
+      <h1 class="hero-title animate-fade-up delay-1">
+        Enterprise Appointment <br>
+        <span>Intelligence via n8n</span>
+      </h1>
+
+      <p class="hero-desc animate-fade-up delay-2">
+        An automated, human-in-the-loop qualification system that intercepts, analyzes, and routes high-value client engagements using AI text classification.
+      </p>
+
+      <div class="btn-group animate-fade-up delay-3">
+        <a href="index.html" id="btn-portfolio" class="secondary-link">← Back to Portfolio</a>
+        <button id="btn-view-architecture" class="primary-btn">
+          <span>View Workflow Architecture</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="gallery-view">
+      <nav class="sticky-nav">
+        <div class="nav-content">
+          <button id="btn-back" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Back to Top
+          </button>
+          <div class="nav-label">System Architecture</div>
+        </div>
+      </nav>
+
+      <div class="macro-grid">
+        <div class="macro-card"><img src="photo_2026-07-04_22-21-02.jpg" alt="Main Qualification Path"></div>
+        <div class="macro-card"><img src="photo_2026-07-04_22-21-03.jpg" alt="Sub-Workflow Approval Path"></div>
+      </div>
+
+      <div class="step-section">
+        <div class="text-content">
+          <div class="step-header"><span class="step-number">01</span><div class="step-line"></div></div>
+          <h3 class="step-title">Qualify Enquiries Using AI</h3>
+          <p class="hero-desc" style="margin: 0; font-size: 1.125rem;">I use n8n's multi-step forms to build clean, conversational booking experiences instead of long, boring forms. In this setup, when a client asks for a meeting, an AI text classifier screens their request first.</p>
+        </div>
+        <div class="image-content">
+          <div class="ide-window"><div class="ide-header"><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-title">n8n-nodes-base / qualify-enquiries</div></div><img src="photo_2026-07-04_21-32-10.jpg" alt="Qualify Enquiries Node"></div>
+        </div>
+      </div>
+
+      <div class="step-section step-reverse">
+        <div class="text-content">
+          <div class="step-header"><span class="step-number">02</span><div class="step-line"></div></div>
+          <h3 class="step-title">Split Form For Better User Experience</h3>
+          <p class="hero-desc" style="margin: 0; font-size: 1.125rem;">I broke the onboarding flow into smaller sections to keep users engaged and avoid overwhelming them. Once the user agrees to the terms, the workflow advances to the next step to let them choose an available date and time.</p>
+        </div>
+        <div class="image-content">
+          <div class="ide-window"><div class="ide-header"><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-title">n8n-nodes-base / split-forms</div></div><img src="photo_2026-07-04_21-32-12.jpg" alt="Split Form Nodes"></div>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="text-content">
+          <div class="step-header"><span class="step-number">03</span><div class="step-line"></div></div>
+          <h3 class="step-title">Send Acknowledgement and Start Approval</h3>
+          <p class="hero-desc" style="margin: 0; font-size: 1.125rem;">As soon as the user finishes the forms, the system sends them a beautiful email confirmation instantly. Simultaneously, the main workflow triggers a hidden background path that alerts me of the request.</p>
+        </div>
+        <div class="image-content">
+          <div class="ide-window"><div class="ide-header"><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-title">n8n-nodes-base / background-trigger</div></div><img src="photo_2026-07-04_21-32-11 (2).jpg" alt="Approval Trigger Node"></div>
+        </div>
+      </div>
+
+      <div class="step-section step-reverse">
+        <div class="text-content">
+          <div class="step-header"><span class="step-number">04</span><div class="step-line"></div></div>
+          <h3 class="step-title">Approve or Decline Appointment</h3>
+          <p class="hero-desc" style="margin: 0; font-size: 1.125rem;">I built a 'human-in-the-loop' approval flow using an n8n automation linked directly to my inbox. The system pauses and sends me a clean email containing the AI's summary and two simple action buttons: Confirm or Decline.</p>
+        </div>
+        <div class="image-content">
+          <div class="ide-window"><div class="ide-header"><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-dot"></div><div class="ide-title">n8n-nodes-base / google-calendar-sync</div></div><img src="photo_2026-07-04_21-32-11.jpg" alt="Calendar Execution Node"></div>
+        </div>
+      </div>
+
+      <div class="download-section">
+        <div class="badge" style="margin-bottom: 1rem;"><div class="ping-dot" style="background: transparent;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--neon-accent);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>Open Source</div>
+        <h3 class="step-title" style="font-size: 2rem;">Deploy This Workflow</h3>
+        <p class="hero-desc">Download the raw JSON architecture to import and test directly in your own n8n instance.</p>
+        <a href="n8n-workflow.json.json" download="Amir-n8n-Booking-System.json" class="primary-btn" style="text-decoration: none; display: inline-flex;"><span>Download n8n JSON</span><svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnViewArch = document.getElementById('btn-view-architecture');
+      const btnPortfolio = document.getElementById('btn-portfolio');
+      const btnBack = document.getElementById('btn-back');
+      const galleryView = document.getElementById('gallery-view');
+
+      btnViewArch.addEventListener('click', () => {
+        galleryView.scrollIntoView({ behavior: 'smooth' });
+      });
+
+      btnBack.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      window.addEventListener('scroll', () => {
+        let scrollY = window.scrollY;
+        
+        // Calculate progress (0 to 1 over 300px)
+        let progress = Math.min(scrollY / 300, 1);
+        
+        // View Arch button: Fades and Shrinks
+        btnViewArch.style.opacity = 1 - progress;
+        btnViewArch.style.transform = `scale(${1 - (progress * 0.5)})`;
+        btnViewArch.style.pointerEvents = progress >= 1 ? 'none' : 'auto';
+        
+        // Portfolio button: Scales up to 1.3x and moves to horizontal center (85px right)
+        btnPortfolio.style.transform = `scale(${1 + (progress * 0.3)}) translateX(${progress * 100}px)`;
+      });
+    });
+  </script>
+</body>
+</html>
