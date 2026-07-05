@@ -120,3 +120,33 @@ window.addEventListener('scroll', () => {
         }
     });
 });
+
+// 6. Formspree Custom Redirect
+const contactForm = document.querySelector('.contact-form');
+
+if (contactForm) {
+    contactForm.addEventListener('submit', async function(event) {
+        event.preventDefault(); // Prevents the default Formspree page from loading
+        
+        const data = new FormData(contactForm);
+        
+        try {
+            const response = await fetch(contactForm.action, {
+                method: 'POST',
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                // If successful, redirect to your local thank you page
+                window.location.href = "thankyou.html";
+            } else {
+                alert("Oops! There was a problem submitting your form.");
+            }
+        } catch (error) {
+            alert("Oops! There was a problem submitting your form.");
+        }
+    });
+}
