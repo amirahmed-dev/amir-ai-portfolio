@@ -105,15 +105,20 @@
 
         <section id="contact" class="contact reveal">
             <h2>Let's <span class="highlight">Connect</span></h2>
-            <form class="contact-form reveal delay-1">
-                <input type="text" placeholder="Your Name" required>
-                <input type="email" placeholder="Your Email" required>
-                <textarea placeholder="Your Message" rows="5" required></textarea>
+            
+            <form action="https://formspree.io/f/mqevnwzp" method="POST" class="contact-form reveal delay-1">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
+                
+                <input type="hidden" name="_next" value="https://amirahmed-dev.github.io/amir-ai-portfolio/thankyou.html">
+                
                 <button type="submit" class="btn primary-btn">Send Message</button>
             </form>
+
             <div class="social-links reveal delay-2">
-                <a href="#">GitHub</a>
-                <a href="#">LinkedIn</a>
+                <a href="https://github.com/amirahmed-dev" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://www.linkedin.com/in/amir-ahmed-236945211" target="_blank" rel="noopener noreferrer">LinkedIn</a>
             </div>
         </section>
     </main>
