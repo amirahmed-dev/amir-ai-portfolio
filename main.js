@@ -15,7 +15,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 });
 
 // 2. Typewriter Effect for Hero Section
-const textArray = ["Hi, I'm Amir Ahmed.", "I am an AI Developer.", "I build Automations."];
+const textArray = ["Hi, I'm Amir Ahmed.", "A CRM & Operations Expert.", "Driving growth with Ai-powered operations."];
 const typingDelay = 100;
 const erasingDelay = 50;
 const newTextDelay = 2000; 
