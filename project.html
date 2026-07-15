@@ -314,21 +314,6 @@
       btnBack.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
-
-      window.addEventListener('scroll', () => {
-        let scrollY = window.scrollY;
-        
-        // Calculate progress (0 to 1 over 300px)
-        let progress = Math.min(scrollY / 300, 1);
-        
-        // View Arch button: Fades and Shrinks
-        btnViewArch.style.opacity = 1 - progress;
-        btnViewArch.style.transform = `scale(${1 - (progress * 0.5)})`;
-        btnViewArch.style.pointerEvents = progress >= 1 ? 'none' : 'auto';
-        
-        // Portfolio button: Scales up to 1.3x and moves to horizontal center (85px right)
-        btnPortfolio.style.transform = `scale(${1 + (progress * 0.3)}) translateX(${progress * 100}px)`;
-      });
     });
   </script>
 </body>
